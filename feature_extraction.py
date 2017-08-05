@@ -19,23 +19,28 @@ fc7 = AlexNet(resized, feature_extract=True)
 # HINT: Look at the final layer definition in alexnet.py to get an idea of what this
 # should look like.
 shape = (fc7.get_shape().as_list()[-1], nb_classes)  # use this shape for the weight matrix
-probs = ...
+
+with tf.name_scope("last_layer"):
+    weights = tf.Variable(tf.random_normal(shape, stddev=0.01), name="weights")
+    bias = tf.Variable(tf.zeros(nb_classes), name="bias")
+    logits = tf.add(tf.matmul(fc7, weights), bias)
+    probs = tf.nn.softmax(logits)
 
 init = tf.global_variables_initializer()
 sess = tf.Session()
 sess.run(init)
-
+ 
 # Read Images
 im1 = imread("construction.jpg").astype(np.float32)
 im1 = im1 - np.mean(im1)
-
+ 
 im2 = imread("stop.jpg").astype(np.float32)
 im2 = im2 - np.mean(im2)
-
+ 
 # Run Inference
 t = time.time()
 output = sess.run(probs, feed_dict={x: [im1, im2]})
-
+ 
 # Print Output
 for input_im_ind in range(output.shape[0]):
     inds = np.argsort(output)[input_im_ind, :]
@@ -43,5 +48,5 @@ for input_im_ind in range(output.shape[0]):
     for i in range(5):
         print("%s: %.3f" % (sign_names.ix[inds[-1 - i]][1], output[input_im_ind, inds[-1 - i]]))
     print()
-
+ 
 print("Time: %.3f seconds" % (time.time() - t))
